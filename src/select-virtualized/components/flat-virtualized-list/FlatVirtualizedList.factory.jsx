@@ -19,6 +19,7 @@ const FlatVirtualizedListFactory = ({
     return (
       <FlatVirtualizedList
         {...props}
+        inputValue={props.selectProps.inputValue}
         optionHeight={optionHeight}
         selectedValue={selectedValue}
         defaultValue={defaultValue}

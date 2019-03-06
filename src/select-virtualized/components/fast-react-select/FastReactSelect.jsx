@@ -1,7 +1,7 @@
 import React, { forwardRef, memo, Fragment, useMemo, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import ReactSelect, { Async as ReactAsync } from 'react-select';
-import { calculateDebounce, filterByLowercaseLabel, mapLowercaseLabel } from './helpers/fast-react-select';
+import { calculateDebounce, mapLowercaseLabel } from './helpers/fast-react-select';
 import { calculateTotalListSize } from '../grouped-virtualized-list/helpers/grouped-list';
 import { optionsPropTypes } from '../../helpers/prop-types';
 
@@ -10,27 +10,15 @@ const LAG_INDICATOR = 1000;
 const loadingMessage = () => <div>...</div>;
 
 let FastReactSelect = (props, ref) => {
-  let timer;
-  const minimumInputSearchIsSet = props.minimumInputSearch > 1;
+  // let timer;
 
   const listSize = useMemo(() => (props.grouped && calculateTotalListSize(props.options)) || props.options.length, [
     props.options.length,
   ]);
-  const debounceTime = useMemo(() => props.onCalculateFilterDebounce(listSize), [listSize]);
-  const [menuIsOpenState, setMenuIsOpen] = (!minimumInputSearchIsSet && []) || useState({ currentInput: '' });
-
-  const updateSetMenuIsOpen = useCallback((inputValue, state) => {
-    if (minimumInputSearchIsSet) {
-      setMenuIsOpen({
-        ...menuIsOpenState,
-        currentInput: inputValue,
-        [inputValue || '']: state,
-      });
-    }
-  });
+  // const debounceTime = useMemo(() => props.onCalculateFilterDebounce(listSize), [listSize]);
+  const [inputState, setInputState] = useState(undefined);
 
   // avoid destructuring to best performance
-  // TODO improve this
   const memoOptions = useMemo(
     () => {
       return mapLowercaseLabel(props.options, props.formatOptionLabel, (itemOption) => {
@@ -46,63 +34,33 @@ let FastReactSelect = (props, ref) => {
   );
 
   const onInputChange = useCallback((inputValue) => {
-    if (minimumInputSearchIsSet) {
-      const inputValLowercase = (inputValue && inputValue.toLowerCase()) || '';
-      updateSetMenuIsOpen(inputValLowercase, props.minimumInputSearch <= inputValLowercase.length);
+    if (inputValue) {
+      setInputState(inputValue.toLowerCase());
     }
   });
 
-  // debounce the filter since it is going to be an expensive operation
-  // filter only the subset on the infinite loader. Does not worth to touch this code anymore
-  // all this is going to be fixed once we filter on the infinite loader.
-  const loadOptions = useCallback((inputValue, callback) => {
-    console.log('calling');
-    if (timer) {
-      clearTimeout(timer);
-    }
-
-    if (minimumInputSearchIsSet && !menuIsOpenState[menuIsOpenState.currentInput]) {
-      return callback(undefined);
-    }
-
-    const inputValLowercase = inputValue && inputValue.toLowerCase();
-    timer = setTimeout(() => {
-      if (!inputValue) {
-        callback(memoOptions);
-      }
-      if (props.grouped) {
-        // don't destructuring obj here is too expensive
-        callback(
-          memoOptions.reduce((acc, item) => {
-            acc.push({
-              ...item,
-              options: filterByLowercaseLabel(item.options, inputValLowercase),
-            });
-            return acc;
-          }, []),
-        );
-      }
-      // don't destructuring obj here is too expensive
-      callback(filterByLowercaseLabel(memoOptions, inputValLowercase));
-      return;
-    }, debounceTime);
-  });
+  // const loadOptions = useCallback((inputValue, callback) => {
+  //   if (timer) {
+  //     clearTimeout(timer);
+  //   }
+  //   timer = setTimeout(() => {
+  //     callback(memoOptions);
+  //     return;
+  //   }, debounceTime);
+  // });
 
   return (
     <Fragment>
-      {listSize <= LAG_INDICATOR && !minimumInputSearchIsSet && <ReactSelect ref={ref} {...props} />}
-      {(listSize > LAG_INDICATOR || minimumInputSearchIsSet) && (
+      {listSize <= LAG_INDICATOR && <ReactSelect ref={ref} {...props} />}
+      {listSize > LAG_INDICATOR && (
         <ReactAsync
           ref={ref}
           {...props}
+          inputValue={inputState}
           loadingMessage={props.loadingMessage || loadingMessage}
-          // this is a limitation on react-select and async, it does not work when caching options
-          // we will have to disable it, all the lag problems are going to be fixed when we work on the
-          // filter on loading items.
-          cacheOptions={!props.grouped}
-          loadOptions={loadOptions}
-          defaultOptions={props.minimumInputSearch > 1 ? true : memoOptions}
-          menuIsOpen={minimumInputSearchIsSet ? !!menuIsOpenState[menuIsOpenState.currentInput] : undefined}
+          cacheOptions={false}
+          // loadOptions={loadOptions}
+          defaultOptions={memoOptions}
           onInputChange={onInputChange}
         />
       )}
@@ -116,12 +74,10 @@ FastReactSelect = memo(FastReactSelect);
 FastReactSelect.propTypes = {
   onCalculateFilterDebounce: PropTypes.func,
   options: optionsPropTypes.isRequired,
-  minimumInputSearch: PropTypes.number,
 };
 
 FastReactSelect.defaultProps = {
   onCalculateFilterDebounce: calculateDebounce,
-  minimumInputSearch: 1,
 };
 
 export default FastReactSelect;

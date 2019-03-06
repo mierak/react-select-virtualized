@@ -46,26 +46,37 @@ let FlatListVirtualized = (props) => {
     [props.options, props.selectedValue, props.defaultValue],
   );
 
-  const list = [];
-
-  const rowRenderer = useMemo(
-    () =>
-      flatVirtualizedListRowRenderer({
-        ...props,
-        onOptionFocused: onOptionFocused,
-      }),
-    [list],
-  );
+  const list = props.children.slice(0, props.minimumBatchSize);
 
   const isRowLoaded = useCallback(({ index }) => {
     return !!list[index];
   });
 
-  const loadMoreRows = useCallback(({ startIndex, stopIndex }) => {
+  let rowRenderer = flatVirtualizedListRowRenderer({
+    ...props,
+    onOptionFocused: onOptionFocused,
+    list,
+  });
+
+  const loadMoreRows = useCallback(({ startIndex }) => {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const result = list.concat(props.children.slice(startIndex, stopIndex));
-        resolve(result);
+        const result = [];
+        for (let i = startIndex; i <= list.length + props.minimumBatchSize; i++) {
+          if (
+            (props.inputValue !== '' &&
+              props.children[i] &&
+              props.children[i].props.data &&
+              props.children[i].props.data.lowercaseLabel &&
+              props.children[i].props.data.lowercaseLabel.includes(props.inputValue)) ||
+            props.inputValue === ''
+          ) {
+            result.push(props.children[i]);
+          }
+        }
+
+        list.push(...result);
+        resolve(list);
       }, 100);
     });
   });
@@ -73,30 +84,32 @@ let FlatListVirtualized = (props) => {
   return (
     <InfiniteLoader
       isRowLoaded={isRowLoaded}
-      threshold={props.threshold}
+      threshold={300}
       loadMoreRows={loadMoreRows}
-      rowCount={props.children.length || 0}
+      rowCount={props.children.length}
       minimumBatchSize={props.minimumBatchSize}
     >
-      {({ onRowsRendered, registerChild }) => (
-        <List
-          ref={(element) => {
-            registerChild(element);
-            listComponent = {
-              current: element,
-            };
-            return element;
-          }}
-          onRowsRendered={onRowsRendered}
-          style={{ width: '100%' }}
-          height={height}
-          scrollToIndex={scrollToIndex}
-          rowCount={props.children.length}
-          rowHeight={props.optionHeight}
-          rowRenderer={rowRenderer}
-          width={props.maxWidth}
-        />
-      )}
+      {({ onRowsRendered, registerChild }) => {
+        return (
+          <List
+            ref={(element) => {
+              registerChild(element);
+              listComponent = {
+                current: element,
+              };
+              return element;
+            }}
+            onRowsRendered={onRowsRendered}
+            style={{ width: '100%' }}
+            height={height}
+            scrollToIndex={scrollToIndex}
+            rowCount={props.children.length}
+            rowHeight={props.optionHeight}
+            rowRenderer={rowRenderer}
+            width={props.maxWidth}
+          />
+        );
+      }}
     </InfiniteLoader>
   );
 };
