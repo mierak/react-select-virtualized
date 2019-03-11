@@ -14,6 +14,7 @@ export const buildListComponents = (props) => {
         optionHeight: props.optionHeight,
         defaultValue: props.defaultValue,
         formatOptionLabel: props.formatOptionLabel,
+        input: props.input,
       });
 
   return components;

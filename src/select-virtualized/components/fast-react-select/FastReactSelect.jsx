@@ -4,6 +4,7 @@ import ReactSelect, { Async as ReactAsync } from 'react-select';
 import { calculateDebounce, mapLowercaseLabel } from './helpers/fast-react-select';
 import { calculateTotalListSize } from '../grouped-virtualized-list/helpers/grouped-list';
 import { optionsPropTypes } from '../../helpers/prop-types';
+import { buildListComponents } from '../../helpers/select';
 
 const LAG_INDICATOR = 1000;
 
@@ -32,23 +33,29 @@ let FastReactSelect = (props, ref) => {
   );
 
   const onInputChange = useCallback((inputValue) => {
-    if (inputValue) {
-      setInputState(inputValue.toLowerCase());
-    }
+    setInputState(inputValue.toLowerCase());
   });
+
+  const extendedComponents = {
+    ...props.components,
+    ...buildListComponents({
+      ...props,
+      input: inputState,
+    }),
+  };
 
   return (
     <Fragment>
-      {listSize <= LAG_INDICATOR && <ReactSelect ref={ref} {...props} />}
+      {listSize <= LAG_INDICATOR && <ReactSelect ref={ref} {...props} components={extendedComponents} />}
       {listSize > LAG_INDICATOR && (
         <ReactAsync
           ref={ref}
           {...props}
-          inputValue={inputState}
           loadingMessage={props.loadingMessage || loadingMessage}
           cacheOptions
           defaultOptions={memoOptions}
           onInputChange={onInputChange}
+          components={extendedComponents}
         />
       )}
     </Fragment>

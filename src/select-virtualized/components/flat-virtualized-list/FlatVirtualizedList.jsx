@@ -69,6 +69,8 @@ let FlatListVirtualized = (props) => {
     });
   });
 
+  console.log('Re-rendering list');
+
   return (
     <InfiniteLoader
       isRowLoaded={isRowLoaded}

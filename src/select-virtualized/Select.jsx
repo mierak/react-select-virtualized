@@ -2,7 +2,7 @@ import { FastReactSelect } from './components/fast-react-select';
 import PropTypes from 'prop-types';
 import React, { useRef, useImperativeHandle, useState, forwardRef, useMemo, memo, useCallback } from 'react';
 import './styles.css';
-import { buildListComponents, getStyles } from './helpers/select';
+import { getStyles } from './helpers/select';
 import { defaultGroupFormat } from './components/grouped-virtualized-list/helpers/grouped-list.jsx';
 import 'react-virtualized/styles.css';
 import { optionsPropTypes } from './helpers/prop-types';
@@ -52,6 +52,8 @@ let Select = (props, ref) => {
     select: (item) => setSelection(item),
   }));
 
+  console.log('re rendering select');
+
   return (
     <FastReactSelect
       ref={reactSelect}
@@ -61,14 +63,9 @@ let Select = (props, ref) => {
       value={selection}
       onChange={onChangeHandler}
       options={props.options}
-      components={{
-        ...props.components,
-        ...buildListComponents({
-          ...props,
-          formatGroupHeaderLabel,
-          groupHeaderHeight,
-        }),
-      }} // props.components comes from react-select if present
+      groupHeaderHeight={groupHeaderHeight}
+      formatGroupHeaderLabel={formatGroupHeaderLabel}
+      // props.components comes from react-select if present
     />
   );
 };

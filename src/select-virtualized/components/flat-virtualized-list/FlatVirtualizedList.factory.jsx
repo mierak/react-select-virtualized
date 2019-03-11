@@ -8,6 +8,7 @@ const FlatVirtualizedListFactory = ({
   defaultValue,
   valueGetter,
   formatOptionLabel,
+  input,
 }) =>
   memo((props) => {
     const selectedValue = props.getValue() ? props.getValue()[0] : undefined;
@@ -16,10 +17,12 @@ const FlatVirtualizedListFactory = ({
       return <ReactSelectComponents.NoOptionsMessage {...props.children.props} />;
     }
 
+    console.log('re-rendering factory');
+
     return (
       <FlatVirtualizedList
         {...props}
-        inputValue={props.selectProps.inputValue}
+        inputValue={input || ''}
         optionHeight={optionHeight}
         selectedValue={selectedValue}
         defaultValue={defaultValue}
