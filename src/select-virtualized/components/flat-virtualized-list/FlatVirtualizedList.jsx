@@ -2,7 +2,7 @@ import { List, InfiniteLoader } from 'react-virtualized';
 import React, { useEffect, memo, useMemo, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { getListHeight, getScrollIndex, getNextRowIndex } from '../../helpers/getters';
-import { flatVirtualizedListRowRenderer } from './helpers/flat-list.jsx';
+import { flatVirtualizedListRowRenderer, updateListWithNextBatchFromIndex } from './helpers/flat-list.jsx';
 
 let FlatListVirtualized = (props) => {
   let queueScrollToIdx = undefined;
@@ -46,7 +46,8 @@ let FlatListVirtualized = (props) => {
     [props.options, props.selectedValue, props.defaultValue],
   );
 
-  const list = props.children.slice(0, props.minimumBatchSize);
+  const list = [];
+  updateListWithNextBatchFromIndex(list, { ...props, fromIndex: 0 });
 
   const isRowLoaded = useCallback(({ index }) => {
     return !!list[index];
@@ -61,21 +62,8 @@ let FlatListVirtualized = (props) => {
   const loadMoreRows = useCallback(({ startIndex }) => {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const result = [];
-        for (let i = startIndex; i <= list.length + props.minimumBatchSize; i++) {
-          if (
-            (props.inputValue !== '' &&
-              props.children[i] &&
-              props.children[i].props.data &&
-              props.children[i].props.data.lowercaseLabel &&
-              props.children[i].props.data.lowercaseLabel.includes(props.inputValue)) ||
-            props.inputValue === ''
-          ) {
-            result.push(props.children[i]);
-          }
-        }
-
-        list.push(...result);
+        const fromIndex = startIndex === 0 ? list.length : startIndex;
+        updateListWithNextBatchFromIndex(list, { ...props, fromIndex });
         resolve(list);
       }, 100);
     });
@@ -84,7 +72,7 @@ let FlatListVirtualized = (props) => {
   return (
     <InfiniteLoader
       isRowLoaded={isRowLoaded}
-      threshold={300}
+      threshold={props.threshold}
       loadMoreRows={loadMoreRows}
       rowCount={props.children.length}
       minimumBatchSize={props.minimumBatchSize}
@@ -126,6 +114,7 @@ FlatListVirtualized.propTypes = {
   valueGetter: PropTypes.func,
   options: PropTypes.array.isRequired,
   minimumBatchSize: PropTypes.number,
+  threshold: PropTypes.number,
 };
 
 FlatListVirtualized.defaultProps = {
@@ -133,6 +122,7 @@ FlatListVirtualized.defaultProps = {
   maxWidth: 500,
   maxHeight: 200,
   minimumBatchSize: 1000,
+  threshold: 300,
 };
 
 FlatListVirtualized.displayName = 'FlatListVirtualized';

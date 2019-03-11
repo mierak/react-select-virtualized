@@ -10,12 +10,10 @@ const LAG_INDICATOR = 1000;
 const loadingMessage = () => <div>...</div>;
 
 let FastReactSelect = (props, ref) => {
-  // let timer;
-
   const listSize = useMemo(() => (props.grouped && calculateTotalListSize(props.options)) || props.options.length, [
     props.options.length,
   ]);
-  // const debounceTime = useMemo(() => props.onCalculateFilterDebounce(listSize), [listSize]);
+
   const [inputState, setInputState] = useState(undefined);
 
   // avoid destructuring to best performance
@@ -39,16 +37,6 @@ let FastReactSelect = (props, ref) => {
     }
   });
 
-  // const loadOptions = useCallback((inputValue, callback) => {
-  //   if (timer) {
-  //     clearTimeout(timer);
-  //   }
-  //   timer = setTimeout(() => {
-  //     callback(memoOptions);
-  //     return;
-  //   }, debounceTime);
-  // });
-
   return (
     <Fragment>
       {listSize <= LAG_INDICATOR && <ReactSelect ref={ref} {...props} />}
@@ -58,8 +46,7 @@ let FastReactSelect = (props, ref) => {
           {...props}
           inputValue={inputState}
           loadingMessage={props.loadingMessage || loadingMessage}
-          cacheOptions={false}
-          // loadOptions={loadOptions}
+          cacheOptions
           defaultOptions={memoOptions}
           onInputChange={onInputChange}
         />
