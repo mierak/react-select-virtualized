@@ -1,10 +1,8 @@
 import React, { forwardRef, memo, Fragment, useMemo, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import ReactSelect, { Async as ReactAsync } from 'react-select';
-import { calculateDebounce, mapLowercaseLabel } from './helpers/fast-react-select';
+import { calculateDebounce, mapLowercaseLabel, buildListComponents } from './helpers/fast-react-select';
 import { calculateTotalListSize } from '../grouped-virtualized-list/helpers/grouped-list';
-import { optionsPropTypes } from '../../helpers/prop-types';
-import { buildListComponents } from '../../helpers/select';
 
 const LAG_INDICATOR = 1000;
 
@@ -36,24 +34,40 @@ let FastReactSelect = (props, ref) => {
     setInputState(inputValue.toLowerCase());
   });
 
-  const extendedComponents = {
-    ...props.components,
-    ...buildListComponents({
-      ...props,
-      input: inputState,
+  const needAsync = listSize > LAG_INDICATOR;
+
+  const extendedComponents = useMemo(
+    () => ({
+      ...props.components,
+      ...buildListComponents({
+        ...props,
+        input: inputState,
+      }),
     }),
-  };
+    [inputState],
+  );
+
+  let timer;
+  const loadOptions = useCallback((input, callback) => {
+    if (timer) {
+      clearTimeout(timer);
+    }
+    timer = setTimeout(() => {
+      callback(memoOptions);
+    }, 100);
+  });
 
   return (
     <Fragment>
-      {listSize <= LAG_INDICATOR && <ReactSelect ref={ref} {...props} components={extendedComponents} />}
-      {listSize > LAG_INDICATOR && (
+      {!needAsync && <ReactSelect ref={ref} {...props} components={extendedComponents} />}
+      {needAsync && (
         <ReactAsync
           ref={ref}
           {...props}
           loadingMessage={props.loadingMessage || loadingMessage}
           cacheOptions
           defaultOptions={memoOptions}
+          loadOptions={loadOptions}
           onInputChange={onInputChange}
           components={extendedComponents}
         />
@@ -67,7 +81,7 @@ FastReactSelect = memo(FastReactSelect);
 
 FastReactSelect.propTypes = {
   onCalculateFilterDebounce: PropTypes.func,
-  options: optionsPropTypes.isRequired,
+  options: PropTypes.array.isRequired,
 };
 
 FastReactSelect.defaultProps = {

@@ -26,15 +26,15 @@ let FlatListVirtualized = (props) => {
     }
   });
 
-  const height = useMemo(
-    () =>
-      getListHeight({
-        maxHeight: props.maxHeight,
-        totalSize: props.children.length,
-        optionHeight: props.optionHeight,
-      }),
-    [props.maxHeight, props.children.length, props.optionHeight],
-  );
+  // const height = useMemo(
+  //   () =>
+  //     getListHeight({
+  //       maxHeight: props.maxHeight,
+  //       totalSize: props.children.length,
+  //       optionHeight: props.optionHeight,
+  //     }),
+  //   [props.maxHeight, props.children.length, props.optionHeight],
+  // );
 
   const scrollToIndex = useMemo(
     () =>
@@ -69,7 +69,11 @@ let FlatListVirtualized = (props) => {
     });
   });
 
-  console.log('Re-rendering list');
+  const height = getListHeight({
+    maxHeight: props.maxHeight,
+    totalSize: list.length,
+    optionHeight: props.optionHeight,
+  });
 
   return (
     <InfiniteLoader
@@ -93,7 +97,7 @@ let FlatListVirtualized = (props) => {
             style={{ width: '100%' }}
             height={height}
             scrollToIndex={scrollToIndex}
-            rowCount={props.children.length}
+            rowCount={list.length}
             rowHeight={props.optionHeight}
             rowRenderer={rowRenderer}
             width={props.maxWidth}

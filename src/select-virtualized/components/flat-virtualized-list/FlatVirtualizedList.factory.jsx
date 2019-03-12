@@ -17,8 +17,6 @@ const FlatVirtualizedListFactory = ({
       return <ReactSelectComponents.NoOptionsMessage {...props.children.props} />;
     }
 
-    console.log('re-rendering factory');
-
     return (
       <FlatVirtualizedList
         {...props}

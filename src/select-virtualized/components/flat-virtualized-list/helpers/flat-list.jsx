@@ -9,6 +9,8 @@ export const flatVirtualizedListRowRenderer = ({ list, onOptionFocused, optionHe
   isVisible,
   isScrolling,
 }) => {
+  console.log('list' + list && list.length);
+  console.log('index' + index);
   const thisProps = list[index].props;
 
   if (thisProps.isFocused && !isScrolling) {
