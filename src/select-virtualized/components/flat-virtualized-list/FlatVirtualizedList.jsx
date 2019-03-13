@@ -26,16 +26,6 @@ let FlatListVirtualized = (props) => {
     }
   });
 
-  // const height = useMemo(
-  //   () =>
-  //     getListHeight({
-  //       maxHeight: props.maxHeight,
-  //       totalSize: props.children.length,
-  //       optionHeight: props.optionHeight,
-  //     }),
-  //   [props.maxHeight, props.children.length, props.optionHeight],
-  // );
-
   const scrollToIndex = useMemo(
     () =>
       getScrollIndex({
@@ -47,7 +37,7 @@ let FlatListVirtualized = (props) => {
   );
 
   const list = [];
-  updateListWithNextBatchFromIndex(list, { ...props, fromIndex: 0 });
+  updateListWithNextBatchFromIndex(list, { ...props, startIndex: 0 });
 
   const isRowLoaded = useCallback(({ index }) => {
     return !!list[index];
@@ -62,8 +52,8 @@ let FlatListVirtualized = (props) => {
   const loadMoreRows = useCallback(({ startIndex }) => {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const fromIndex = startIndex === 0 ? list.length : startIndex;
-        updateListWithNextBatchFromIndex(list, { ...props, fromIndex });
+        // this function will update internally the list, it is a side effect for best performance
+        updateListWithNextBatchFromIndex(list, { ...props, startIndex });
         resolve(list);
       }, 100);
     });
@@ -127,8 +117,8 @@ FlatListVirtualized.defaultProps = {
   valueGetter: (item) => item && item.value,
   maxWidth: 500,
   maxHeight: 200,
-  minimumBatchSize: 1000,
-  threshold: 300,
+  minimumBatchSize: 300,
+  threshold: 100,
 };
 
 FlatListVirtualized.displayName = 'FlatListVirtualized';
