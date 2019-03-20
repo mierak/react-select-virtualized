@@ -39,6 +39,17 @@ export const filterGroupedElementsBy = (list, inputValLowercase, filterBy) => {
 };
 
 export const getFilteredItems = ({ inputValue, memoOptions, grouped }) => {
+  const filterByLowercaseLabel = (list, value) => {
+    const result = [];
+    const size = list.length;
+    for (var i = 0; i < size; i++) {
+      if (list[i].lowercaseLabel.indexOf(value) >= 0) {
+        result.push(list[i]);
+      }
+    }
+    return result;
+  };
+
   const inputValLowercase = inputValue && inputValue.toLowerCase();
   if (!inputValue) {
     return memoOptions;

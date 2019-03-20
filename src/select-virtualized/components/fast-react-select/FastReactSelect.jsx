@@ -4,12 +4,15 @@ import ReactSelect, { Async as ReactAsync } from 'react-select';
 import { calculateDebounce, mapLowercaseLabel, getFilteredItems } from './helpers/fast-react-select';
 import { calculateTotalListSize } from '../grouped-virtualized-list/helpers/grouped-list';
 import { optionsPropTypes } from '../../helpers/prop-types';
+import * as workly from 'workly/dist/workly.umd';
 
 const LAG_INDICATOR = 1000;
 
 const loadingMessage = () => <div>...</div>;
 
 let FastReactSelect = (props, ref) => {
+  const workerGetFilteredItems = workly.proxy(getFilteredItems);
+
   const minimumInputSearchIsSet = props.minimumInputSearch > 1;
 
   const listSize = useMemo(() => (props.grouped && calculateTotalListSize(props.options)) || props.options.length, [
@@ -56,9 +59,12 @@ let FastReactSelect = (props, ref) => {
     if (minimumInputSearchIsSet && !menuIsOpenState[menuIsOpenState.currentInput]) {
       return callback(undefined);
     }
-    return setTimeout(() => {
-      callback(getFilteredItems({ inputValue, memoOptions, grouped: props.grouped }));
-    }, debounceTime);
+    return setTimeout(async () => {
+      console.time('perf');
+      const result = await workerGetFilteredItems({ inputValue, memoOptions, grouped: props.grouped });
+      console.timeEnd('perf');
+      callback(result);
+    });
   });
 
   return (
