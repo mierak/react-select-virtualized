@@ -22,7 +22,7 @@ export const defaultFormatOptionLabel = (item) => item.label;
 
 export const mapLowercaseLabel = (list, formatOptionLabel = defaultFormatOptionLabel, iterator = () => ({})) =>
   list.map((item) => ({
-    lowercaseLabel: formatOptionLabel(item, {}).toLowerCase(),
+    lowercaseLabel: item.label.toLowerCase(),
     ...item,
     ...iterator(item),
   }));
