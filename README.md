@@ -29,8 +29,6 @@ npm install --save react-select-virtualized
 
 remember to install them also if they are not already in your project.
 
-NOTE: "react-hover-observer" is temporary until I implement it myself will be a dependency (not a peer dep) until then.
-
 ```bash (v1.3.4)
 {
     "react": "^16.8.6",
@@ -77,6 +75,9 @@ Do you want to see it working? -> https://serene-hawking-021d7a.netlify.com/
 - [x] adding react-select v3.
 - [x] fixing addon-info.
 - [x] remove classnames.
+- [x] improve packaging.
+- [x] remove react-hover-observer.
+- [x] Added controlled components support.
 
 -- v 2.1.0 --
 
@@ -87,11 +88,6 @@ Do you want to see it working? -> https://serene-hawking-021d7a.netlify.com/
 - [ ] add testing so we do not only relay on storybook.
 
 -- v 2.3.0 --
-
-- [ ] improve packaging.
-- [ ] remove react-hover-observer.
-
--- v 2.4.0 --
 
 - [ ] add multi value support.
 
@@ -105,7 +101,6 @@ Do you want to see it working? -> https://serene-hawking-021d7a.netlify.com/
 | optionHeight                                 | number                                     | 31      | height of each option                                                         |
 | groupHeaderHeight                            | number                                     |         | header row height in the popover list                                         |
 | maxHeight (coming from react-select)         | number                                     | auto    | max height popover list                                                       |
-| maxWidth (coming from react-select)          | number                                     | 1024    | max width in the popover list, it is set to 1024 for performance reasons.     |  |
 
 ## What we do support and don't from react-select
 
